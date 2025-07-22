@@ -4,57 +4,65 @@ using UnityEngine.UI;
 public class StopGameButton : MonoBehaviour
 {
     private Button stopButton;
-    private Button startButton;
+    private GhostManager ghostManager;
+    private GameObject startButton;
     
     void Start()
     {
+        // Get components
         stopButton = GetComponent<Button>();
+        ghostManager = FindAnyObjectByType<GhostManager>();
+        startButton = GameObject.Find("StartGameButton");
         
-        // Find the start button
-        GameObject startObj = GameObject.Find("StartGameButton");
-        if (startObj != null)
-            startButton = startObj.GetComponent<Button>();
-        
+        // Add click listener
         if (stopButton != null)
         {
-            stopButton.onClick.AddListener(StopGhostHunt);
+            stopButton.onClick.AddListener(StopGame);
         }
         
-        Debug.Log("Stop button initialized");
+        // Initially hide the stop button
+        gameObject.SetActive(false);
     }
     
-    public void StopGhostHunt()
+    public void StopGame()
     {
-        Debug.Log("=== STOPPING GHOST HUNT ===");
-        
         // Clear all spawned ghosts
         ClearAllGhosts();
         
-        // Hide stop button, show start button
-        if (stopButton != null)
-            stopButton.gameObject.SetActive(false);
+        // Reset ghost counter
+        if (ghostManager != null)
+        {
+            ghostManager.ResetGhostCount();
+        }
         
+        // Show start button, hide stop button
         if (startButton != null)
-            startButton.gameObject.SetActive(true);
+        {
+            startButton.SetActive(true);
+        }
+        gameObject.SetActive(false);
         
-        Debug.Log("Ghost hunt stopped - returned to menu");
+        Debug.Log("Game stopped - returned to main menu");
     }
     
-    void ClearAllGhosts()
+    private void ClearAllGhosts()
     {
-        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("Ghost");
-        int clearedCount = 0;
+        // Find and destroy all ghosts in the scene
+        GameObject[] allGhosts = GameObject.FindGameObjectsWithTag("Ghost");
         
-        foreach (GameObject ghost in ghosts)
+        foreach (GameObject ghost in allGhosts)
         {
-            // Only clear spawned ghosts, not prefabs
-            if (ghost.name.Contains("Smart") || ghost.name.Contains("Prefab") || ghost.name.Contains("Test"))
+            if (ghost.name.Contains("Clone")) // Only destroy spawned ghosts, not prefabs
             {
                 Destroy(ghost);
-                clearedCount++;
             }
         }
         
-        Debug.Log($"Cleared {clearedCount} ghosts from scene");
+        Debug.Log($"Cleared {allGhosts.Length} ghosts from scene");
+    }
+    
+    public void ShowStopButton()
+    {
+        gameObject.SetActive(true);
     }
 }
